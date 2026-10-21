@@ -1,0 +1,843 @@
+<!doctype html>
+<html lang="sl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Koledar apartmaja</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap">
+<style>
+/* Layout: year of 12 month grids on the left, a quiet summary column on the right; stacks on phones. */
+:root {
+  --bg: #f4f7f8;
+  --surface: #ffffff;
+  --ink: #10232e;
+  --muted: #5d717d;
+  --line: #dce4e8;
+  --soft: #e9eff2;
+  --accent: #0b6e8a;
+  --accent-ink: #ffffff;
+  --danger: #b4392a;
+  --c0: #7cc4dd; --c1: #8fd0a5; --c2: #f0cf7a; --c3: #f2a68e;
+  --c4: #b8a9ea; --c5: #ee9fc0; --c6: #c6d07d; --c7: #a3b6c6;
+  --on-c: #10232e;
+  --shadow: 0 1px 2px rgba(16,35,46,.06), 0 8px 24px rgba(16,35,46,.06);
+  --f-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0c1518; --surface: #132026; --ink: #e5eef1; --muted: #8fa3ad; --line: #23343c; --soft: #1a2a31;
+    --accent: #52b6d2; --accent-ink: #062530; --danger: #ef7b69;
+    --c0: #2e7f99; --c1: #3e8a5a; --c2: #a1812c; --c3: #ad5b43; --c4: #6c5dae; --c5: #a44f78; --c6: #788834; --c7: #4e6577;
+    --on-c: #f2f7f9; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0c1518; --surface: #132026; --ink: #e5eef1; --muted: #8fa3ad; --line: #23343c; --soft: #1a2a31;
+  --accent: #52b6d2; --accent-ink: #062530; --danger: #ef7b69;
+  --c0: #2e7f99; --c1: #3e8a5a; --c2: #a1812c; --c3: #ad5b43; --c4: #6c5dae; --c5: #a44f78; --c6: #788834; --c7: #4e6577;
+  --on-c: #f2f7f9; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body {
+  margin: 0;
+  background: var(--bg); color: var(--ink);
+  font-family: var(--f-body); font-size: 15px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 64px;
+}
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.wrap { max-width: 1280px; margin: 0 auto; display: grid; gap: 28px; }
+
+/* Header */
+.top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px 24px; }
+.brand h1 { font-family: var(--f-display); font-weight: 700; font-size: clamp(28px, 4vw, 38px); letter-spacing: -0.02em; line-height: 1.05; margin: 0; text-wrap: balance; }
+.brand p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+.controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.yearnav { display: flex; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
+.yearnav button { border: 0; background: none; width: 34px; height: 34px; border-radius: 999px; font-size: 18px; color: var(--muted); }
+.yearnav button:hover { background: var(--soft); color: var(--ink); }
+.yearnav strong { font-family: var(--f-display); font-weight: 700; font-size: 18px; min-width: 56px; text-align: center; font-variant-numeric: tabular-nums; }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 9px 16px; font-weight: 600; font-size: 14px; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.ghost { border-color: transparent; background: none; color: var(--muted); }
+.btn.ghost:hover { color: var(--ink); background: var(--soft); }
+.btn.danger { color: var(--danger); border-color: transparent; background: none; padding-left: 0; }
+.btn.danger.armed { background: var(--danger); color: var(--surface); padding-left: 16px; }
+
+/* Hint bar */
+.hint { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; min-height: 44px; padding: 8px 8px 8px 16px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+.hint.selecting { border-color: var(--accent); color: var(--ink); background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
+.hint b { color: var(--ink); font-weight: 600; }
+
+.main { display: grid; gap: 32px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 1040px) { .main { grid-template-columns: minmax(0, 1fr) 320px; } }
+
+/* Calendar */
+.months { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 232px), 1fr)); gap: 28px 26px; }
+.month header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+.month h3 { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: 17px; letter-spacing: -0.01em; text-transform: capitalize; }
+.month header span { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.month.current h3 { color: var(--accent); }
+.wd, .days { display: grid; grid-template-columns: repeat(7, 1fr); }
+.wd { font-size: 10.5px; letter-spacing: .08em; color: var(--muted); text-align: center; margin-bottom: 4px; }
+.wd span:nth-child(n+6) { color: color-mix(in srgb, var(--muted) 70%, var(--accent)); }
+.days { row-gap: 3px; }
+.day {
+  aspect-ratio: 1; border: 0; background: none; padding: 0;
+  display: grid; place-items: center; font-size: 12.5px; font-variant-numeric: tabular-nums;
+  border-radius: 8px; position: relative; color: var(--ink);
+  transition: background-color .12s;
+}
+.day:hover { background-color: var(--soft); }
+.day.we:not(.occ) { color: var(--muted); }
+.day.occ { color: var(--on-c); font-weight: 600; border-radius: 0; }
+.day.occ:hover { filter: brightness(1.06) saturate(1.05); }
+.day.occ.s { border-top-left-radius: 999px; border-bottom-left-radius: 999px; }
+.day.occ.e { border-top-right-radius: 999px; border-bottom-right-radius: 999px; }
+.day.occ.mon:not(.s) { border-top-left-radius: 4px; border-bottom-left-radius: 4px; }
+.day.occ.sun:not(.e) { border-top-right-radius: 4px; border-bottom-right-radius: 4px; }
+.day.multi { border-radius: 6px; }
+.day.today::after { content: ""; position: absolute; inset: 2px; border-radius: 999px; box-shadow: inset 0 0 0 2px var(--accent); pointer-events: none; }
+.day.pick { background: color-mix(in srgb, var(--accent) 22%, transparent) !important; color: var(--ink); border-radius: 0; }
+.day.pick.ps { border-top-left-radius: 999px; border-bottom-left-radius: 999px; background: var(--accent) !important; color: var(--accent-ink); }
+.day.pick.pe { border-top-right-radius: 999px; border-bottom-right-radius: 999px; background: var(--accent) !important; color: var(--accent-ink); }
+.readonly .day:not(.occ) { cursor: default; }
+.readonly .day:not(.occ):hover { background: none; }
+
+/* Summary column */
+aside { display: grid; gap: 22px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px; display: grid; gap: 14px; }
+.panel h2 { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: 16px; letter-spacing: -0.01em; }
+.label { font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.figures { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.figures div { display: grid; gap: 2px; }
+.figures strong { font-family: var(--f-display); font-size: 26px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.figures span { font-size: 12px; color: var(--muted); }
+.bars { display: grid; grid-template-columns: repeat(12, 1fr); gap: 4px; align-items: end; height: 64px; }
+.bars div { background: var(--soft); border-radius: 4px; height: 100%; position: relative; overflow: hidden; }
+.bars i { position: absolute; left: 0; right: 0; bottom: 0; background: var(--accent); border-radius: 4px; }
+.bars-lbl { display: grid; grid-template-columns: repeat(12, 1fr); gap: 4px; font-size: 10px; color: var(--muted); text-align: center; margin-top: -8px; }
+
+.people { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.people li { display: grid; gap: 5px; }
+.people .row { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.people .name { font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.people .meta { font-size: 12.5px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.people .track { height: 6px; border-radius: 99px; background: var(--soft); overflow: hidden; }
+.people .track i { display: block; height: 100%; border-radius: 99px; }
+
+.stays { list-style: none; margin: 0; padding: 0; display: grid; }
+.stays li + li { border-top: 1px solid var(--line); }
+.stay-btn { width: 100%; text-align: left; border: 0; background: none; padding: 10px 6px; border-radius: 8px; display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 4px 10px; align-items: baseline; }
+.stay-btn:hover { background: var(--soft); }
+.stay-btn:disabled { cursor: default; }
+.stay-btn:disabled:hover { background: none; }
+.dot { width: 10px; height: 10px; border-radius: 99px; align-self: center; }
+.stay-btn .who { font-weight: 600; overflow-wrap: anywhere; }
+.stay-btn .when { grid-column: 2; font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.stay-btn .n { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; grid-row: 1; grid-column: 3; }
+.empty { color: var(--muted); font-size: 14px; margin: 0; }
+.status { font-size: 13px; color: var(--muted); }
+
+/* Dialogs */
+dialog { border: 0; padding: 0; border-radius: 18px; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); width: min(480px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); }
+dialog::backdrop { background: rgba(8, 20, 26, .45); backdrop-filter: blur(2px); }
+.dlg { padding: 22px; display: grid; gap: 18px; }
+.dlg h2 { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: 21px; letter-spacing: -0.01em; text-wrap: balance; }
+.dlg .sub { margin: -12px 0 0; color: var(--muted); font-size: 14px; }
+.field { display: grid; gap: 6px; }
+.field > label, .field > .label { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: .02em; text-transform: none; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.input, .chips { width: 100%; border: 1px solid var(--line); background: var(--bg); border-radius: 10px; padding: 9px 11px; min-height: 42px; }
+.input:focus, .chips:focus-within { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 6px 8px; cursor: text; }
+.chips input { border: 0; background: none; outline: none; flex: 1 1 140px; min-width: 120px; padding: 4px; }
+.chip { display: inline-flex; align-items: center; gap: 4px; background: var(--soft); border-radius: 999px; padding: 3px 4px 3px 11px; font-size: 14px; font-weight: 500; }
+.chip button { border: 0; background: none; width: 22px; height: 22px; border-radius: 99px; color: var(--muted); font-size: 15px; line-height: 1; }
+.chip button:hover { background: var(--line); color: var(--ink); }
+.quick { display: flex; flex-wrap: wrap; gap: 6px; }
+.quick button { border: 1px dashed var(--line); background: none; border-radius: 999px; padding: 3px 10px; font-size: 13px; color: var(--muted); }
+.quick button:hover { border-color: var(--accent); color: var(--ink); border-style: solid; }
+.swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.swatches button { width: 30px; height: 30px; border-radius: 99px; border: 0; box-shadow: inset 0 0 0 1px rgba(0,0,0,.06); }
+.swatches button[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ink); }
+.nights { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.err { color: var(--danger); font-size: 13.5px; margin: 0; }
+.actions { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.actions .right { display: flex; gap: 8px; margin-left: auto; }
+
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-size: 14px; box-shadow: var(--shadow); z-index: 20; max-width: calc(100vw - 32px); }
+
+@media (max-width: 480px) {
+  .two { grid-template-columns: 1fr; }
+  .dlg { padding: 18px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>Koledar apartmaja</h1>
+      <p>Kdo je bil kdaj na morju. Klikni dan prihoda, nato dan odhoda.</p>
+    </div>
+    <div class="controls">
+      <div class="yearnav" role="group" aria-label="Leto">
+        <button id="prev-year" type="button" aria-label="Prejšnje leto">‹</button>
+        <strong id="year-label">2026</strong>
+        <button id="next-year" type="button" aria-label="Naslednje leto">›</button>
+      </div>
+      <button id="today-btn" class="btn ghost" type="button">Danes</button>
+      <button id="new-btn" class="btn primary" type="button">Nov vpis</button>
+    </div>
+  </header>
+
+  <div id="hint" class="hint" aria-live="polite"><span id="hint-text">Nalagam vpise …</span><button id="cancel-sel" class="btn ghost" type="button" hidden>Prekliči</button></div>
+
+  <div class="main">
+    <div id="months" class="months" aria-label="Letni koledar"></div>
+
+    <aside>
+      <section class="panel">
+        <div class="label" id="sum-label">Leto 2026</div>
+        <div class="figures">
+          <div><strong id="fig-days">0</strong><span id="fig-days-l">zasedenih dni</span></div>
+          <div><strong id="fig-stays">0</strong><span id="fig-stays-l">obiskov</span></div>
+          <div><strong id="fig-guests">0</strong><span id="fig-guests-l">gostov</span></div>
+        </div>
+        <div class="bars" id="bars" aria-label="Zasedenost po mesecih"></div>
+        <div class="bars-lbl"><span>J</span><span>F</span><span>M</span><span>A</span><span>M</span><span>J</span><span>J</span><span>A</span><span>S</span><span>O</span><span>N</span><span>D</span></div>
+      </section>
+
+      <section class="panel">
+        <h2>Kdo je bil</h2>
+        <ul id="people" class="people"></ul>
+        <p id="people-empty" class="empty">Ko dodaš prvi vpis, se tukaj prikaže, kdo je bil kolikokrat in koliko noči.</p>
+      </section>
+
+      <section class="panel">
+        <h2>Vsi vpisi</h2>
+        <ul id="stays" class="stays"></ul>
+        <p id="stays-empty" class="empty">Še ni vpisov za to leto.</p>
+      </section>
+      <button id="export-btn" class="btn ghost" type="button" hidden>Prenesi varnostno kopijo (JSON)</button>
+    </aside>
+  </div>
+</div>
+
+<dialog id="editor" aria-labelledby="ed-title">
+  <form id="ed-form" class="dlg" novalidate>
+    <h2 id="ed-title">Nov vpis</h2>
+    <div class="two">
+      <div class="field"><label for="f-start">Prihod</label><input id="f-start" class="input" type="date" required></div>
+      <div class="field"><label for="f-end">Odhod</label><input id="f-end" class="input" type="date" required></div>
+    </div>
+    <div class="nights" id="f-nights"></div>
+    <div class="field">
+      <label for="f-guest">Kdo je prisoten</label>
+      <div class="chips" id="f-chips">
+        <input id="f-guest" list="known-names" autocomplete="off" placeholder="Ime in priimek, nato Enter">
+      </div>
+      <datalist id="known-names"></datalist>
+      <div class="quick" id="f-quick"></div>
+    </div>
+    <div class="field">
+      <span class="label">Barva v koledarju</span>
+      <div class="swatches" id="f-colors" role="group" aria-label="Barva"></div>
+    </div>
+    <div class="field"><label for="f-note">Opomba</label><input id="f-note" class="input" maxlength="200" placeholder="Neobvezno, npr. tudi pes"></div>
+    <p class="err" id="f-err" hidden></p>
+    <div class="actions">
+      <button id="f-delete" class="btn danger" type="button" hidden>Izbriši</button>
+      <div class="right">
+        <button id="f-cancel" class="btn ghost" type="button">Prekliči</button>
+        <button id="f-save" class="btn primary" type="submit">Shrani</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="daysheet" aria-labelledby="ds-title">
+  <div class="dlg">
+    <h2 id="ds-title"></h2>
+    <ul id="ds-list" class="stays"></ul>
+    <div class="actions">
+      <button id="ds-new" class="btn" type="button">Nov vpis od tega dne</button>
+      <div class="right"><button id="ds-close" class="btn ghost" type="button">Zapri</button></div>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="pindlg" aria-labelledby="pin-title">
+  <form id="pin-form" class="dlg" novalidate>
+    <h2 id="pin-title">Vpiši PIN</h2>
+    <p class="sub">Koledar je zaščiten. PIN si naprava zapomni, zato ga vpišeš samo enkrat.</p>
+    <div class="field"><label for="pin-input">PIN</label><input id="pin-input" class="input" type="password" autocomplete="current-password" required></div>
+    <p class="err" id="pin-err" hidden>PIN ni pravilen.</p>
+    <div class="actions"><div class="right"><button class="btn primary" type="submit">Odkleni</button></div></div>
+  </form>
+</dialog>
+
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script>
+(() => {
+  const MS = 86400000;
+  const MONTHS = ["januar","februar","marec","april","maj","junij","julij","avgust","september","oktober","november","december"];
+  const MON_SHORT = ["jan.","feb.","mar.","apr.","maj","jun.","jul.","avg.","sep.","okt.","nov.","dec."];
+  const WEEKDAYS = ["nedelja","ponedeljek","torek","sreda","četrtek","petek","sobota"];
+  const COLORS = 8;
+  const KEY_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const pad = (n) => String(n).padStart(2, "0");
+  const key = (y, m, d) => `${y}-${pad(m + 1)}-${pad(d)}`;
+  const k2ms = (k) => { const [y, m, d] = k.split("-").map(Number); return Date.UTC(y, m - 1, d); };
+  const ms2k = (ms) => new Date(ms).toISOString().slice(0, 10);
+  const nightsOf = (a, b) => Math.round((k2ms(b) - k2ms(a)) / MS);
+  const todayKey = () => { const d = new Date(); return key(d.getFullYear(), d.getMonth(), d.getDate()); };
+  const normName = (s) => s.replace(/\s+/g, " ").trim();
+
+  // Slovenian plural forms: [1, 2, 3–4, 5+]
+  const plural = (n, f) => { const r = Math.abs(n) % 100; return r === 1 ? f[0] : r === 2 ? f[1] : (r === 3 || r === 4) ? f[2] : f[3]; };
+  const P_NOC = ["noč", "noči", "noči", "noči"];
+  const P_OBISK = ["obisk", "obiska", "obiski", "obiskov"];
+  const P_DAN = ["zaseden dan", "zasedena dneva", "zasedeni dnevi", "zasedenih dni"];
+  const P_DNI = ["dan", "dneva", "dnevi", "dni"];
+  const P_GOST = ["gost", "gosta", "gostje", "gostov"];
+
+  function fmtDay(k, withYear) {
+    const [y, m, d] = k.split("-").map(Number);
+    return `${d}. ${MON_SHORT[m - 1]}${withYear ? " " + y : ""}`;
+  }
+  function fmtRange(a, b) {
+    if (a === b) return fmtDay(a, false);
+    const [ya, ma, da] = a.split("-").map(Number);
+    const [yb, mb] = b.split("-").map(Number);
+    if (ya !== yb) return `${fmtDay(a, true)} – ${fmtDay(b, true)}`;
+    if (ma === mb) return `${da}.–${fmtDay(b, false)}`;
+    return `${fmtDay(a, false)} – ${fmtDay(b, false)}`;
+  }
+  function fmtLong(k) {
+    const [y, m, d] = k.split("-").map(Number);
+    return `${WEEKDAYS[new Date(k2ms(k)).getUTCDay()]}, ${d}. ${MONTHS[m - 1]} ${y}`;
+  }
+  function stayLen(s) {
+    const n = nightsOf(s.start, s.end);
+    return n === 0 ? "dnevni obisk" : `${n} ${plural(n, P_NOC)}`;
+  }
+
+  const state = {
+    year: new Date().getFullYear(),
+    stays: [],
+    db: null,
+    loaded: false,
+    canWrite: null,   // null = unknown, keep controls; false = read-only
+    sel: null,        // arrival key while picking
+    hover: null,
+    editing: null,    // stay being edited, or null for new
+    form: { guests: [], color: 0, colorTouched: false },
+    sheetDay: null,
+  };
+
+  function cleanStay(id, d) {
+    if (!d || !KEY_RE.test(d.start) || !KEY_RE.test(d.end) || !Array.isArray(d.guests)) return null;
+    const guests = d.guests.filter((g) => typeof g === "string" && g.trim()).map(normName);
+    if (!guests.length) return null;
+    let [start, end] = [d.start, d.end];
+    if (end < start) [start, end] = [end, start];
+    const color = Number.isInteger(d.color) && d.color >= 0 && d.color < COLORS ? d.color : 0;
+    return { id, start, end, guests, color, note: typeof d.note === "string" ? d.note : "", createdAt: d.createdAt || "" };
+  }
+  const sorted = () => [...state.stays].sort((a, b) => a.start.localeCompare(b.start) || a.end.localeCompare(b.end) || String(a.createdAt).localeCompare(String(b.createdAt)));
+
+  function yearBounds(y) { return [Date.UTC(y, 0, 1), Date.UTC(y, 11, 31)]; }
+  function buildIndex() {
+    const [ys, ye] = yearBounds(state.year);
+    const map = new Map();
+    for (const s of sorted()) {
+      const a = Math.max(k2ms(s.start), ys), b = Math.min(k2ms(s.end), ye);
+      for (let t = a; t <= b; t += MS) {
+        const k = ms2k(t);
+        if (!map.has(k)) map.set(k, []);
+        map.get(k).push(s);
+      }
+    }
+    return map;
+  }
+
+  // Known people, most recent spelling and color wins
+  function knownPeople() {
+    const m = new Map();
+    for (const s of sorted()) for (const g of s.guests) {
+      const k = g.toLowerCase();
+      const p = m.get(k) || { name: g, count: 0, color: s.color };
+      p.name = g; p.count++; p.color = s.color;
+      m.set(k, p);
+    }
+    return m;
+  }
+  function hashColor(name) {
+    let h = 0;
+    for (const c of name.toLowerCase()) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+    return h % COLORS;
+  }
+
+  /* ---------- Calendar ---------- */
+  function fillFor(list) {
+    const c = list.map((s) => `var(--c${s.color})`);
+    if (c.length === 1) return c[0];
+    if (c.length === 2) return `linear-gradient(135deg, ${c[0]} 0 50%, ${c[1]} 50% 100%)`;
+    const step = 100 / c.length;
+    return `linear-gradient(to bottom, ${c.map((x, i) => `${x} ${(i * step).toFixed(2)}% ${((i + 1) * step).toFixed(2)}%`).join(", ")})`;
+  }
+
+  let index = new Map();
+  function renderCalendar() {
+    index = buildIndex();
+    const y = state.year, tk = todayKey();
+    const html = [];
+    for (let m = 0; m < 12; m++) {
+      const dim = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+      const offset = (new Date(Date.UTC(y, m, 1)).getUTCDay() + 6) % 7;
+      let occ = 0;
+      const cells = [];
+      for (let i = 0; i < offset; i++) cells.push("<span></span>");
+      for (let d = 1; d <= dim; d++) {
+        const k = key(y, m, d);
+        const wd = (offset + d - 1) % 7;
+        const list = index.get(k);
+        const cls = ["day"];
+        if (wd >= 5) cls.push("we");
+        if (wd === 0) cls.push("mon");
+        if (wd === 6) cls.push("sun");
+        if (k === tk) cls.push("today");
+        let style = "", title = fmtLong(k);
+        if (list) {
+          occ++;
+          cls.push("occ");
+          if (list.length > 1) cls.push("multi");
+          else { if (list[0].start === k) cls.push("s"); if (list[0].end === k) cls.push("e"); }
+          style = ` style="background:${fillFor(list)}"`;
+          title += " · " + list.map((s) => s.guests.join(", ")).join(" | ");
+        }
+        cells.push(`<button type="button" class="${cls.join(" ")}" data-k="${k}"${style} title="${esc(title)}" aria-label="${esc(title)}">${d}</button>`);
+      }
+      const isCur = y === new Date().getFullYear() && m === new Date().getMonth();
+      html.push(`<section class="month${isCur ? " current" : ""}" id="m-${m}">
+        <header><h3>${MONTHS[m]}</h3><span>${occ ? `${occ} ${plural(occ, P_DNI)}` : ""}</span></header>
+        <div class="wd"><span>P</span><span>T</span><span>S</span><span>Č</span><span>P</span><span>S</span><span>N</span></div>
+        <div class="days">${cells.join("")}</div></section>`);
+    }
+    $("months").innerHTML = html.join("");
+    $("months").classList.toggle("readonly", state.canWrite === false || !state.db);
+    paintPick();
+  }
+
+  function paintPick() {
+    const a0 = state.sel, b0 = state.hover || state.sel;
+    let a = a0, b = b0;
+    if (a && b && b < a) [a, b] = [b, a];
+    for (const el of $("months").querySelectorAll(".day")) {
+      const k = el.dataset.k;
+      const on = !!a && k >= a && k <= b;
+      el.classList.toggle("pick", on);
+      el.classList.toggle("ps", on && k === a);
+      el.classList.toggle("pe", on && k === b);
+    }
+  }
+
+  /* ---------- Summary ---------- */
+  function renderSummary() {
+    const y = state.year;
+    const [ys, ye] = yearBounds(y);
+    $("year-label").textContent = y;
+    $("sum-label").textContent = `Leto ${y}`;
+
+    const inYear = sorted().filter((s) => k2ms(s.start) <= ye && k2ms(s.end) >= ys);
+    const days = index.size;
+    const people = new Map();
+    for (const s of inYear) {
+      // nights counted by the evening they start, so a stay over New Year splits between years
+      let n = 0;
+      for (let t = Math.max(k2ms(s.start), ys); t < Math.min(k2ms(s.end), ye + MS); t += MS) n++;
+      for (const g of s.guests) {
+        const k = g.toLowerCase();
+        const p = people.get(k) || { name: g, visits: 0, nights: 0, color: s.color };
+        p.name = g; p.visits++; p.nights += n; p.color = s.color;
+        people.set(k, p);
+      }
+    }
+
+    $("fig-days").textContent = days;
+    $("fig-days-l").textContent = plural(days, P_DAN);
+    $("fig-stays").textContent = inYear.length;
+    $("fig-stays-l").textContent = plural(inYear.length, P_OBISK);
+    $("fig-guests").textContent = people.size;
+    $("fig-guests-l").textContent = plural(people.size, P_GOST);
+
+    const bars = [];
+    for (let m = 0; m < 12; m++) {
+      const dim = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+      let occ = 0;
+      for (let d = 1; d <= dim; d++) if (index.has(key(y, m, d))) occ++;
+      bars.push(`<div title="${MONTHS[m]}: ${occ} / ${dim} ${plural(dim, P_DNI)}"><i style="height:${(occ / dim * 100).toFixed(1)}%"></i></div>`);
+    }
+    $("bars").innerHTML = bars.join("");
+
+    const list = [...people.values()].sort((a, b) => b.nights - a.nights || b.visits - a.visits || a.name.localeCompare(b.name, "sl"));
+    const maxN = Math.max(1, ...list.map((p) => p.nights));
+    $("people").innerHTML = list.map((p) => `<li>
+        <div class="row"><span class="name">${esc(p.name)}</span><span class="meta">${p.visits} ${plural(p.visits, P_OBISK)} · ${p.nights} ${plural(p.nights, P_NOC)}</span></div>
+        <div class="track"><i style="width:${Math.max(3, p.nights / maxN * 100).toFixed(1)}%;background:var(--c${p.color})"></i></div>
+      </li>`).join("");
+    $("people-empty").hidden = list.length > 0;
+
+    const editable = state.canWrite !== false && !!state.db;
+    $("stays").innerHTML = inYear.map((s) => stayRow(s, editable)).join("");
+    $("stays-empty").hidden = inYear.length > 0;
+    $("stays-empty").textContent = state.loaded || !state.db ? `Še ni vpisov za leto ${y}.` : "Nalagam vpise …";
+  }
+
+  function stayRow(s, editable) {
+    const note = s.note ? ` · ${esc(s.note)}` : "";
+    return `<li><button type="button" class="stay-btn" data-id="${esc(s.id)}"${editable ? "" : " disabled"}>
+      <span class="dot" style="background:var(--c${s.color})"></span>
+      <span class="who">${esc(s.guests.join(", "))}</span>
+      <span class="n">${stayLen(s)}</span>
+      <span class="when">${fmtRange(s.start, s.end)}${note}</span>
+    </button></li>`;
+  }
+
+  function renderHint() {
+    const t = $("hint-text");
+    const hint = $("hint");
+    hint.classList.toggle("selecting", !!state.sel);
+    $("cancel-sel").hidden = !state.sel;
+    if (state.sel) {
+      t.innerHTML = `Prihod <b>${fmtDay(state.sel, true)}</b>. Zdaj klikni dan odhoda (za enodnevni obisk isti dan).`;
+    } else if (!state.db) {
+      t.textContent = state.loaded ? "Povezava s strežnikom ni uspela. Osveži stran čez nekaj trenutkov." : "Nalagam vpise …";
+    } else if (state.canWrite === false) {
+      t.textContent = "Samo za ogled. Klikni pobarvan dan, da vidiš, kdo je bil tam.";
+    } else {
+      t.innerHTML = "Klikni <b>dan prihoda</b>, nato <b>dan odhoda</b>. Klik na pobarvan dan pokaže, kdo je bil tam.";
+    }
+    $("new-btn").hidden = !state.db || state.canWrite === false;
+    $("export-btn").hidden = !state.db || !state.stays.length;
+  }
+
+  function render() { renderCalendar(); renderSummary(); renderHint(); }
+
+  /* ---------- Toast ---------- */
+  let toastTimer;
+  function toast(msg) {
+    const el = $("toast");
+    el.textContent = msg; el.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.hidden = true; }, 2600);
+  }
+
+  /* ---------- Selection ---------- */
+  function startSelect(k) { state.sel = k; state.hover = k; paintPick(); renderHint(); }
+  function cancelSelect() { state.sel = null; state.hover = null; paintPick(); renderHint(); }
+  function finishSelect(k) {
+    let a = state.sel, b = k;
+    if (b < a) [a, b] = [b, a];
+    cancelSelect();
+    openEditor(null, a, b);
+  }
+
+  $("months").addEventListener("click", (e) => {
+    const el = e.target.closest(".day");
+    if (!el) return;
+    const k = el.dataset.k;
+    if (state.sel) return finishSelect(k);
+    if (index.has(k)) return openDaySheet(k);
+    if (state.db && state.canWrite !== false) startSelect(k);
+  });
+  $("months").addEventListener("mouseover", (e) => {
+    if (!state.sel) return;
+    const el = e.target.closest(".day");
+    if (el && el.dataset.k !== state.hover) { state.hover = el.dataset.k; paintPick(); }
+  });
+  $("cancel-sel").addEventListener("click", cancelSelect);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && state.sel && !document.querySelector("dialog[open]")) cancelSelect(); });
+
+  /* ---------- Day sheet ---------- */
+  function openDaySheet(k) {
+    state.sheetDay = k;
+    const editable = state.canWrite !== false && !!state.db;
+    $("ds-title").textContent = fmtLong(k);
+    $("ds-list").innerHTML = (index.get(k) || []).map((s) => stayRow(s, editable)).join("");
+    $("ds-new").hidden = !editable;
+    $("daysheet").showModal();
+  }
+  $("ds-close").addEventListener("click", () => $("daysheet").close());
+  $("ds-new").addEventListener("click", () => { $("daysheet").close(); startSelect(state.sheetDay); });
+  function onStayClick(e) {
+    const b = e.target.closest(".stay-btn");
+    if (!b || b.disabled) return;
+    const s = state.stays.find((x) => x.id === b.dataset.id);
+    if (!s) return;
+    if ($("daysheet").open) $("daysheet").close();
+    openEditor(s);
+  }
+  $("ds-list").addEventListener("click", onStayClick);
+  $("stays").addEventListener("click", onStayClick);
+
+  /* ---------- Editor ---------- */
+  const f = state.form;
+  function openEditor(stay, a, b) {
+    state.editing = stay;
+    f.guests = stay ? [...stay.guests] : [];
+    f.color = stay ? stay.color : 0;
+    f.colorTouched = !!stay;
+    $("ed-title").textContent = stay ? "Uredi vpis" : "Nov vpis";
+    $("f-start").value = stay ? stay.start : a;
+    $("f-end").value = stay ? stay.end : b;
+    $("f-note").value = stay ? stay.note : "";
+    $("f-guest").value = "";
+    $("f-err").hidden = true;
+    $("f-delete").hidden = !stay;
+    disarmDelete();
+    $("known-names").innerHTML = [...knownPeople().values()].map((p) => `<option value="${esc(p.name)}"></option>`).join("");
+    renderForm();
+    $("editor").showModal();
+    if (!stay) $("f-guest").focus();
+  }
+
+  function renderForm() {
+    const chips = $("f-chips"), input = $("f-guest");
+    chips.querySelectorAll(".chip").forEach((c) => c.remove());
+    f.guests.forEach((g, i) => {
+      const c = document.createElement("span");
+      c.className = "chip";
+      const t = document.createElement("span"); t.textContent = g;
+      const x = document.createElement("button"); x.type = "button"; x.textContent = "×"; x.setAttribute("aria-label", `Odstrani ${g}`);
+      x.addEventListener("click", () => { f.guests.splice(i, 1); renderForm(); input.focus(); });
+      c.append(t, x);
+      chips.insertBefore(c, input);
+    });
+    input.placeholder = f.guests.length ? "Dodaj še koga" : "Ime in priimek, nato Enter";
+
+    const have = new Set(f.guests.map((g) => g.toLowerCase()));
+    const quick = [...knownPeople().values()].filter((p) => !have.has(p.name.toLowerCase())).sort((a, b) => b.count - a.count).slice(0, 8);
+    const q = $("f-quick"); q.innerHTML = "";
+    for (const p of quick) {
+      const btn = document.createElement("button");
+      btn.type = "button"; btn.textContent = "+ " + p.name;
+      btn.addEventListener("click", () => { addGuest(p.name); input.focus(); });
+      q.append(btn);
+    }
+
+    const sw = $("f-colors"); sw.innerHTML = "";
+    for (let i = 0; i < COLORS; i++) {
+      const btn = document.createElement("button");
+      btn.type = "button"; btn.style.background = `var(--c${i})`;
+      btn.setAttribute("aria-label", `Barva ${i + 1}`);
+      btn.setAttribute("aria-pressed", String(i === f.color));
+      btn.addEventListener("click", () => { f.color = i; f.colorTouched = true; renderForm(); });
+      sw.append(btn);
+    }
+    updateNights();
+  }
+
+  function addGuest(raw) {
+    const name = normName(raw || "");
+    if (!name) return false;
+    const known = knownPeople().get(name.toLowerCase());
+    const final = known ? known.name : name;
+    if (!f.guests.some((g) => g.toLowerCase() === final.toLowerCase())) f.guests.push(final);
+    if (!f.colorTouched && f.guests.length === 1) f.color = known ? known.color : hashColor(final);
+    $("f-guest").value = "";
+    renderForm();
+    return true;
+  }
+
+  function updateNights() {
+    const a = $("f-start").value, b = $("f-end").value;
+    if (!KEY_RE.test(a) || !KEY_RE.test(b)) { $("f-nights").textContent = ""; return; }
+    if (b < a) { $("f-nights").textContent = "Odhod je pred prihodom."; return; }
+    const n = nightsOf(a, b);
+    $("f-nights").textContent = n === 0 ? "Dnevni obisk, brez nočitve" : `${n} ${plural(n, P_NOC)} · ${n + 1} ${plural(n + 1, P_DNI)} v koledarju`;
+  }
+  $("f-start").addEventListener("input", () => {
+    if ($("f-end").value && $("f-end").value < $("f-start").value) $("f-end").value = $("f-start").value;
+    updateNights();
+  });
+  $("f-end").addEventListener("input", updateNights);
+  $("f-chips").addEventListener("click", (e) => { if (e.target === $("f-chips")) $("f-guest").focus(); });
+  $("f-guest").addEventListener("keydown", (e) => {
+    if ((e.key === "Enter" || e.key === ",") && $("f-guest").value.trim()) { e.preventDefault(); addGuest($("f-guest").value); }
+    else if (e.key === "Enter") { /* empty input: let the form submit */ }
+    else if (e.key === "Backspace" && !$("f-guest").value && f.guests.length) { f.guests.pop(); renderForm(); }
+  });
+  $("f-cancel").addEventListener("click", () => $("editor").close());
+
+  function showErr(msg) { const el = $("f-err"); el.textContent = msg; el.hidden = false; }
+
+  let saving = false;
+  $("ed-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (saving) return;
+    if ($("f-guest").value.trim()) addGuest($("f-guest").value);
+    const start = $("f-start").value, end = $("f-end").value;
+    if (!KEY_RE.test(start) || !KEY_RE.test(end)) return showErr("Vpiši datum prihoda in odhoda.");
+    if (end < start) return showErr("Odhod ne more biti pred prihodom.");
+    if (!f.guests.length) return showErr("Dodaj vsaj eno osebo: vpiši ime in priimek ter pritisni Enter.");
+    const now = new Date().toISOString();
+    const body = {
+      start, end, guests: [...f.guests], color: f.color,
+      note: normName($("f-note").value).slice(0, 200),
+      createdAt: state.editing?.createdAt || now, updatedAt: now,
+    };
+    saving = true; $("f-save").disabled = true;
+    try {
+      if (state.editing) await state.db.update(state.editing.id, body);
+      else await state.db.create(body);
+      await load();
+      $("editor").close();
+      toast(state.editing ? "Vpis posodobljen" : "Vpis shranjen");
+      if (k2ms(start) && Number(start.slice(0, 4)) !== state.year && Number(end.slice(0, 4)) !== state.year) {
+        state.year = Number(start.slice(0, 4)); render();
+      }
+    } catch (err) {
+      handleWriteError(err);
+    } finally {
+      saving = false; $("f-save").disabled = false;
+    }
+  });
+
+  function disarmDelete() { const d = $("f-delete"); d.classList.remove("armed"); d.textContent = "Izbriši"; }
+  $("f-delete").addEventListener("click", async () => {
+    const d = $("f-delete");
+    if (!d.classList.contains("armed")) { d.classList.add("armed"); d.textContent = "Res izbriši?"; return; }
+    try {
+      await state.db.remove(state.editing.id);
+      await load();
+      $("editor").close();
+      toast("Vpis izbrisan");
+    } catch (err) { handleWriteError(err); }
+  });
+
+  function handleWriteError(err) {
+    const code = err && err.code;
+    if (code === "auth") {
+      $("editor").close();
+      askPin(false);
+    } else if (code === "invalid") {
+      showErr("Strežnik je zavrnil vpis. Preveri datume in imena.");
+    } else if (code === "notfound") {
+      $("editor").close();
+      load();
+      toast("Tega vpisa ni več, nekdo ga je medtem izbrisal.");
+    } else {
+      showErr("Shranjevanje ni uspelo. Preveri povezavo in poskusi znova.");
+    }
+  }
+
+  /* ---------- Header controls ---------- */
+  $("prev-year").addEventListener("click", () => { state.year--; cancelSelect(); render(); });
+  $("next-year").addEventListener("click", () => { state.year++; cancelSelect(); render(); });
+  $("today-btn").addEventListener("click", () => {
+    const now = new Date();
+    if (state.year !== now.getFullYear()) { state.year = now.getFullYear(); render(); }
+    $("m-" + now.getMonth())?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+  });
+  $("new-btn").addEventListener("click", () => { const t = todayKey(); openEditor(null, t, ms2k(k2ms(t) + 2 * MS)); });
+
+  $("export-btn").addEventListener("click", () => {
+    const data = JSON.stringify({ exportedAt: new Date().toISOString(), stays: sorted() }, null, 2);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([data], { type: "application/json" }));
+    a.download = `apartma-vpisi-${todayKey()}.json`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+
+  /* ---------- Data (Cloudflare Pages Functions + D1) ---------- */
+  const PIN_KEY = "apartma-pin";
+  let pin = "";
+  try { pin = localStorage.getItem(PIN_KEY) || ""; } catch {}
+
+  async function call(method, path, body) {
+    const headers = { "content-type": "application/json" };
+    if (pin) headers["x-pin"] = pin;
+    const r = await fetch("/api/stays" + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
+    if (r.status === 401) throw { code: "auth" };
+    if (r.status === 400) throw { code: "invalid" };
+    if (r.status === 404) throw { code: "notfound" };
+    if (!r.ok) throw { code: "http", status: r.status };
+    return r.status === 204 ? null : r.json();
+  }
+  const api = {
+    list: () => call("GET", ""),
+    create: (b) => call("POST", "", b),
+    update: (id, b) => call("PUT", "/" + encodeURIComponent(id), b),
+    remove: (id) => call("DELETE", "/" + encodeURIComponent(id)),
+  };
+
+  let loading = null;
+  function load() {
+    if (loading) return loading;
+    loading = (async () => {
+      try {
+        const rows = await api.list();
+        state.stays = rows.map((r) => cleanStay(r.id, r)).filter(Boolean);
+        state.db = api;
+      } catch (e) {
+        if (e && e.code === "auth") askPin(!pin);
+        else if (!state.loaded) state.db = null;
+      } finally {
+        state.loaded = true;
+        loading = null;
+        render();
+      }
+    })();
+    return loading;
+  }
+
+  function askPin(first) {
+    if ($("pindlg").open) return;
+    $("pin-err").hidden = first;
+    $("pin-input").value = "";
+    $("pindlg").showModal();
+    $("pin-input").focus();
+  }
+  $("pin-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    pin = $("pin-input").value.trim();
+    try { localStorage.setItem(PIN_KEY, pin); } catch {}
+    $("pindlg").close();
+    load();
+  });
+  $("pindlg").addEventListener("cancel", (e) => e.preventDefault());
+
+  render();
+  load();
+  // keep other family members' changes in view
+  setInterval(() => { if (document.visibilityState === "visible" && !$("pindlg").open) load(); }, 30000);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") load(); });
+})();
+</script>
+</body>
+</html>
